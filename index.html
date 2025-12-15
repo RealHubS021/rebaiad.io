@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GameStore</title>
+  <style>
+    *{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+    body{margin:0;background:#0b0f1a;color:#e5e7eb}
+    header{display:flex;justify-content:space-between;align-items:center;padding:16px 24px;background:#0f172a}
+    header h1{margin:0;color:#22c55e}
+    header button{background:#22c55e;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-weight:bold}
+    main{padding:24px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+    .card{background:#111827;border-radius:10px;padding:12px;box-shadow:0 0 10px rgba(0,0,0,.4)}
+    .card img{width:100%;height:140px;object-fit:cover;border-radius:8px}
+    .card h3{margin:8px 0 4px}
+    .card p{margin:4px 0}
+    .card button{width:100%;margin-top:8px;background:#3b82f6;border:none;padding:8px;border-radius:6px;color:#fff;cursor:pointer}
+    #loginBox,#adminBox,#cartBox{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);justify-content:center;align-items:center}
+    .modal{background:#020617;padding:20px;border-radius:10px;width:320px}
+    .modal h2{margin-top:0}
+    .modal input,.modal textarea{width:100%;margin-bottom:8px;padding:8px;border-radius:6px;border:none}
+    .modal button{width:100%;padding:8px;margin-top:6px;border:none;border-radius:6px;cursor:pointer}
+    .green{background:#22c55e}
+    .red{background:#ef4444}
+    .cart-item{display:flex;justify-content:space-between;margin-bottom:6px}
+  </style>
+</head>
+<body>
+<header>
+  <h1>GameStore</h1>
+  <div>
+    <button onclick="openCart()">Carrinho</button>
+    <button onclick="openLogin()">Admin</button>
+  </div>
+</header>
+
+<main>
+  <div class="grid" id="products"></div>
+</main>
+
+<!-- LOGIN -->
+<div id="loginBox">
+  <div class="modal">
+    <h2>Login Admin</h2>
+    <input type="password" id="adminPass" placeholder="Senha admin" />
+    <button class="green" onclick="loginAdmin()">Entrar</button>
+    <button class="red" onclick="closeLogin()">Cancelar</button>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="adminBox">
+  <div class="modal">
+    <h2>Novo Produto</h2>
+    <input id="pName" placeholder="Nome do produto" />
+    <input id="pPrice" placeholder="Preço" />
+    <input id="pImage" placeholder="URL da imagem" />
+    <textarea id="pDesc" placeholder="Descrição"></textarea>
+    <button class="green" onclick="addProduct()">Adicionar</button>
+    <button class="red" onclick="closeAdmin()">Fechar</button>
+  </div>
+</div>
+
+<!-- CARRINHO -->
+<div id="cartBox">
+  <div class="modal">
+    <h2>Carrinho</h2>
+    <div id="cartItems"></div>
+    <button class="green" onclick="checkout()">Finalizar no WhatsApp</button>
+    <button class="red" onclick="closeCart()">Fechar</button>
+  </div>
+</div>
+
+<script>
+  const ADMIN_PASSWORD = "adm3954";
+  let products = JSON.parse(localStorage.getItem("products")||"[]");
+  let cart = JSON.parse(localStorage.getItem("cart")||"[]");
+
+  function save(){localStorage.setItem("products",JSON.stringify(products));render()}
+  function render(){
+    const el=document.getElementById("products");el.innerHTML="";
+    products.forEach((p,i)=>{
+      el.innerHTML+=`<div class='card'>
+        <img src='${p.image}' />
+        <h3>${p.name}</h3>
+        <p>${p.desc}</p>
+        <p><b>R$ ${p.price}</b></p>
+        <button onclick='addCart(${i})'>Adicionar</button>
+      </div>`;
+    });
+  }
+  function addProduct(){
+    products.push({
+      name:pName.value,price:pPrice.value,image:pImage.value,desc:pDesc.value
+    });
+    save();closeAdmin();
+  }
+  function addCart(i){cart.push(products[i]);localStorage.setItem("cart",JSON.stringify(cart))}
+
+  function openLogin(){loginBox.style.display="flex"}
+  function closeLogin(){loginBox.style.display="none"}
+  function loginAdmin(){
+    if(adminPass.value===ADMIN_PASSWORD){closeLogin();adminBox.style.display="flex"}
+    else alert("Senha incorreta")
+  }
+  function closeAdmin(){adminBox.style.display="none"}
+
+  function openCart(){cartBox.style.display="flex";renderCart()}
+  function closeCart(){cartBox.style.display="none"}
+  function renderCart(){
+    cartItems.innerHTML="";
+    cart.forEach(c=>cartItems.innerHTML+=`<div class='cart-item'><span>${c.name}</span><span>R$ ${c.price}</span></div>`)
+  }
+  function checkout(){
+    let msg="Olá, quero comprar:%0A";
+    cart.forEach(c=>msg+=`- ${c.name} (R$ ${c.price})%0A`);
+    window.open(`https://wa.me/5599999999999?text=${msg}`);
+  }
+
+  render();
+</script>
+</body>
+</html>
